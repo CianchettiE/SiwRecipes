@@ -5,6 +5,7 @@ import it.uniroma3.siw.model.Review;
 import it.uniroma3.siw.model.User;
 import it.uniroma3.siw.security.CustomUserDetails;
 import it.uniroma3.siw.service.RecipeService;
+import it.uniroma3.siw.service.ImageService;
 import it.uniroma3.siw.service.ReviewService;
 import it.uniroma3.siw.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
+import java.io.IOException;
 
 @Controller
 @RequestMapping("/recipes")
@@ -28,6 +31,9 @@ public class RecipeController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ImageService imageService;
 
     // UC1: Visualizzare elenco ricette (utente generico)
     @GetMapping
@@ -75,10 +81,22 @@ public class RecipeController {
     @PostMapping("/new")
     public String createRecipe(@Valid @ModelAttribute Recipe recipe,
             BindingResult result,
+            @RequestParam(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             Model model) {
         if (result.hasErrors()) {
             return "recipes/form";
+        }
+
+        // Gestione upload immagine
+        if (image != null && !image.isEmpty()) {
+            try {
+                String imageUrl = imageService.saveImage(image);
+                recipe.setImageUrl(imageUrl);
+            } catch (IOException e) {
+                model.addAttribute("error", "Errore nel caricamento dell'immagine: " + e.getMessage());
+                return "recipes/form";
+            }
         }
 
         User author = userDetails.getUser();
@@ -108,7 +126,9 @@ public class RecipeController {
     public String updateRecipe(@PathVariable Long id,
             @Valid @ModelAttribute Recipe recipe,
             BindingResult result,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            Model model) {
         if (result.hasErrors()) {
             return "recipes/form";
         }
@@ -116,6 +136,25 @@ public class RecipeController {
         Recipe existingRecipe = recipeService.findById(id);
         if (!recipeService.isAuthor(existingRecipe, userDetails.getUser())) {
             return "redirect:/recipes/" + id;
+        }
+
+        // Gestione upload nuova immagine
+        if (image != null && !image.isEmpty()) {
+            try {
+                // Elimina la vecchia immagine se esiste
+                if (existingRecipe.getImageUrl() != null) {
+                    imageService.deleteImage(existingRecipe.getImageUrl());
+                }
+                String imageUrl = imageService.saveImage(image);
+                recipe.setImageUrl(imageUrl);
+            } catch (IOException e) {
+                model.addAttribute("error", "Errore nel caricamento dell'immagine: " + e.getMessage());
+                model.addAttribute("recipe", recipe);
+                return "recipes/form";
+            }
+        } else {
+            // Mantieni l'immagine esistente se non ne viene caricata una nuova
+            recipe.setImageUrl(existingRecipe.getImageUrl());
         }
 
         recipe.setId(id);

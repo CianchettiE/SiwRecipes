@@ -1,90 +1,100 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head th:replace="~{fragments/header :: head}">
     <title>Ricette - SiwRecipes</title>
 </head>
+
 <body>
 
-<div th:replace="~{fragments/header :: navbar}"></div>
+    <div th:replace="~{fragments/header :: navbar}"></div>
 
-<div class="container mt-4">
-    
-    <!-- Header con filtri -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2><i class="bi bi-book"></i> Tutte le Ricette</h2>
-            <p th:if="${category}" class="text-muted">
-                Categoria: <span th:text="${category}"></span>
-            </p>
-        </div>
-        <div class="col-md-4 text-end">
-            <a th:href="@{/recipes/new}" 
-               sec:authorize="isAuthenticated()" 
-               class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nuova Ricetta
-            </a>
-        </div>
-    </div>
-    
-    <!-- Filtri per categoria -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="btn-group" role="group">
-                <a th:href="@{/recipes}" class="btn btn-outline-primary">Tutte</a>
-                <a th:href="@{/recipes/category/PRIMI}" class="btn btn-outline-primary">Primi</a>
-                <a th:href="@{/recipes/category/SECONDI}" class="btn btn-outline-primary">Secondi</a>
-                <a th:href="@{/recipes/category/DOLCI}" class="btn btn-outline-primary">Dolci</a>
-                <a th:href="@{/recipes/category/VEGETARIANO}" class="btn btn-outline-primary">Vegetariano</a>
+    <div class="container mt-4">
+
+        <!-- Header con filtri -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="bi bi-book"></i> Tutte le Ricette</h2>
+                <p th:if="${category}" class="text-muted">
+                    Categoria: <span th:text="${category}"></span>
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a th:href="@{/recipes/new}" sec:authorize="isAuthenticated()" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nuova Ricetta
+                </a>
             </div>
         </div>
-    </div>
-    
-    <!-- Lista ricette -->
-    <div class="row" th:if="${!recipes.empty}">
-        <div class="col-md-4 mb-4" th:each="recipe : ${recipes}">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${recipe.title}">Titolo Ricetta</h5>
-                    <p class="card-text text-muted small" th:text="${recipe.shortDescription}">
-                        Descrizione breve
-                    </p>
-                    
-                    <div class="mb-2">
-                        <span class="badge bg-secondary" th:text="${recipe.category}"></span>
-                        <span class="badge bg-info" th:text="${recipe.difficulty}"></span>
-                    </div>
-                    
-                    <div class="text-muted small mb-3">
-                        <i class="bi bi-clock"></i> 
-                        <span th:text="${recipe.preparationTime}"></span> min
-                        <br>
-                        <i class="bi bi-person"></i> 
-                        <span th:text="${recipe.author.name + ' ' + recipe.author.surname}"></span>
-                    </div>
-                    
-                    <a th:href="@{/recipes/{id}(id=${recipe.id})}" 
-                       class="btn btn-sm btn-primary">
-                        Vedi Dettagli
-                    </a>
+
+        <!-- Filtri per categoria -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="btn-group" role="group">
+                    <a th:href="@{/recipes}" class="btn btn-outline-primary">Tutte</a>
+                    <a th:href="@{/recipes/category/PRIMI}" class="btn btn-outline-primary">Primi</a>
+                    <a th:href="@{/recipes/category/SECONDI}" class="btn btn-outline-primary">Secondi</a>
+                    <a th:href="@{/recipes/category/DOLCI}" class="btn btn-outline-primary">Dolci</a>
+                    <a th:href="@{/recipes/category/VEGETARIANO}" class="btn btn-outline-primary">Vegetariano</a>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Messaggio se non ci sono ricette -->
-    <div class="alert alert-info" th:if="${recipes.empty}">
-        <i class="bi bi-info-circle"></i> 
-        Nessuna ricetta disponibile. 
-        <a th:href="@{/recipes/new}" sec:authorize="isAuthenticated()">
-            Crea la prima ricetta!
-        </a>
-    </div>
-    
-</div>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
-<div th:replace="~{fragments/footer :: scripts}"></div>
+        <!-- Lista ricette -->
+        <div class="row" th:if="${!recipes.empty}">
+            <div class="col-md-4 mb-4" th:each="recipe : ${recipes}">
+                <div class="card h-100 shadow-sm">
+                    <!-- Immagine ricetta -->
+                    <div th:if="${recipe.imageUrl != null}">
+                        <img th:src="@{${recipe.imageUrl}}" class="card-img-top" alt="Immagine ricetta"
+                            style="height: 200px; object-fit: cover;">
+                    </div>
+                    <div th:unless="${recipe.imageUrl != null}"
+                        class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                        style="height: 200px;">
+                        <i class="bi bi-image text-white" style="font-size: 4rem;"></i>
+                    </div>
+
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${recipe.title}">Titolo Ricetta</h5>
+                        <p class="card-text text-muted small" th:text="${recipe.shortDescription}">
+                            Descrizione breve
+                        </p>
+
+                        <div class="mb-2">
+                            <span class="badge bg-secondary" th:text="${recipe.category}"></span>
+                            <span class="badge bg-info" th:text="${recipe.difficulty}"></span>
+                        </div>
+
+                        <div class="text-muted small mb-3">
+                            <i class="bi bi-clock"></i>
+                            <span th:text="${recipe.preparationTime}"></span> min
+                            <br>
+                            <i class="bi bi-person"></i>
+                            <span th:text="${recipe.author.name + ' ' + recipe.author.surname}"></span>
+                        </div>
+
+                        <a th:href="@{/recipes/{id}(id=${recipe.id})}" class="btn btn-sm btn-primary">
+                            Vedi Dettagli
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messaggio se non ci sono ricette -->
+        <div class="alert alert-info" th:if="${recipes.empty}">
+            <i class="bi bi-info-circle"></i>
+            Nessuna ricetta disponibile.
+            <a th:href="@{/recipes/new}" sec:authorize="isAuthenticated()">
+                Crea la prima ricetta!
+            </a>
+        </div>
+
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/footer :: scripts}"></div>
 
 </body>
+
 </html>

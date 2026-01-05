@@ -1,172 +1,180 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{fragments/header :: head}">
     <title>Nuova Ricetta - SiwRecipes</title>
 </head>
+
 <body>
 
-<div th:replace="~{fragments/header :: navbar}"></div>
+    <div th:replace="~{fragments/header :: navbar}"></div>
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">
-                        <i class="bi bi-plus-circle"></i> 
-                        <span th:text="${recipe.id != null} ? 'Modifica Ricetta' : 'Nuova Ricetta'">
-                            Nuova Ricetta
-                        </span>
-                    </h3>
-                </div>
-                <div class="card-body">
-                    
-                    <form th:action="${recipe.id != null} 
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">
+                            <i class="bi bi-plus-circle"></i>
+                            <span th:text="${recipe.id != null} ? 'Modifica Ricetta' : 'Nuova Ricetta'">
+                                Nuova Ricetta
+                            </span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+
+                        <form th:action="${recipe.id != null} 
                                      ? @{/recipes/{id}/edit(id=${recipe.id})} 
-                                     : @{/recipes/new}" 
-                          th:object="${recipe}" 
-                          method="post">
-                        
-                        <!-- Titolo -->
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Titolo *</label>
-                            <input type="text" class="form-control" 
-                                   th:field="*{title}" 
-                                   th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'" 
-                                   required>
-                            <div class="invalid-feedback" th:errors="*{title}"></div>
-                        </div>
-                        
-                        <!-- Descrizione breve -->
-                        <div class="mb-3">
-                            <label for="shortDescription" class="form-label">
-                                Descrizione breve
-                            </label>
-                            <textarea class="form-control" 
-                                      th:field="*{shortDescription}" 
-                                      rows="2" 
-                                      maxlength="500"></textarea>
-                            <small class="text-muted">Max 500 caratteri</small>
-                        </div>
-                        
-                        <!-- Categoria e Difficoltà -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="category" class="form-label">Categoria *</label>
-                                <select class="form-select" th:field="*{category}" required>
-                                    <option value="">Seleziona...</option>
-                                    <option value="PRIMI">Primi Piatti</option>
-                                    <option value="SECONDI">Secondi Piatti</option>
-                                    <option value="DOLCI">Dolci</option>
-                                    <option value="ANTIPASTI">Antipasti</option>
-                                    <option value="VEGETARIANO">Vegetariano</option>
-                                    <option value="VEGANO">Vegano</option>
-                                </select>
+                                     : @{/recipes/new}" th:object="${recipe}" method="post"
+                            enctype="multipart/form-data">
+
+                            <!-- Titolo -->
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Titolo *</label>
+                                <input type="text" class="form-control" th:field="*{title}"
+                                    th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'" required>
+                                <div class="invalid-feedback" th:errors="*{title}"></div>
                             </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label for="difficulty" class="form-label">Difficoltà *</label>
-                                <select class="form-select" th:field="*{difficulty}" required>
-                                    <option value="">Seleziona...</option>
-                                    <option value="FACILE">Facile</option>
-                                    <option value="MEDIA">Media</option>
-                                    <option value="DIFFICILE">Difficile</option>
-                                </select>
-                            </div>
-                            
-                            <div class="col-md-4 mb-3">
-                                <label for="preparationTime" class="form-label">
-                                    Tempo (minuti) *
+
+                            <!-- Descrizione breve -->
+                            <div class="mb-3">
+                                <label for="shortDescription" class="form-label">
+                                    Descrizione breve
                                 </label>
-                                <input type="number" class="form-control" 
-                                       th:field="*{preparationTime}" 
-                                       min="1" required>
+                                <textarea class="form-control" th:field="*{shortDescription}" rows="2"
+                                    maxlength="500"></textarea>
+                                <small class="text-muted">Max 500 caratteri</small>
                             </div>
-                        </div>
-                        
-                        <!-- Ingredienti -->
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="bi bi-basket"></i> Ingredienti *
-                            </label>
-                            <div id="ingredients-container">
-                                <!-- Gli ingredienti esistenti (in caso di modifica) -->
-                                <div class="row mb-2 ingredient-row" 
-                                     th:each="ingredient, iterStat : ${recipe.ingredients}">
-                                    <div class="col-md-5">
-                                        <input type="text" class="form-control" 
-                                               th:field="*{ingredients[__${iterStat.index}__].name}"
-                                               placeholder="Nome ingrediente" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <input type="text" class="form-control" 
-                                               th:field="*{ingredients[__${iterStat.index}__].quantity}"
-                                               placeholder="Quantità" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <input type="text" class="form-control" 
-                                               th:field="*{ingredients[__${iterStat.index}__].unit}"
-                                               placeholder="Unità (g, ml, ecc.)" required>
-                                    </div>
-                                    <div class="col-md-1">
-                                        <button type="button" class="btn btn-danger btn-sm" 
-                                                onclick="removeIngredient(this)">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
+
+                            <!-- Upload Immagine -->
+                            <div class="mb-3">
+                                <label for="image" class="form-label">
+                                    <i class="bi bi-image"></i> Immagine Ricetta
+                                </label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                <small class="text-muted">Max 5MB - Formati: JPG, PNG, GIF</small>
+
+                                <!-- Mostra immagine esistente se in modalità modifica -->
+                                <div th:if="${recipe.imageUrl != null}" class="mt-2">
+                                    <p class="text-muted mb-1">Immagine attuale:</p>
+                                    <img th:src="@{${recipe.imageUrl}}" alt="Immagine ricetta"
+                                        style="max-width: 200px; max-height: 200px; object-fit: cover; border-radius: 8px;">
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-sm btn-secondary mt-2" 
-                                    onclick="addIngredient()">
-                                <i class="bi bi-plus"></i> Aggiungi Ingrediente
-                            </button>
-                        </div>
-                        
-                        <!-- Procedimento -->
-                        <div class="mb-3">
-                            <label for="procedure" class="form-label">
-                                <i class="bi bi-list-ol"></i> Procedimento *
-                            </label>
-                            <textarea class="form-control" 
-                                      th:field="*{procedure}" 
-                                      rows="8" 
-                                      required></textarea>
-                            <small class="text-muted">
-                                Descrivi i passaggi per preparare la ricetta
-                            </small>
-                        </div>
-                        
-                        <!-- Pulsanti -->
-                        <div class="d-flex justify-content-between">
-                            <a th:href="@{/recipes}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Annulla
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Salva Ricetta
-                            </button>
-                        </div>
-                    </form>
+
+                            <!-- Categoria e Difficoltà -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="category" class="form-label">Categoria *</label>
+                                    <select class="form-select" th:field="*{category}" required>
+                                        <option value="">Seleziona...</option>
+                                        <option value="PRIMI">Primi Piatti</option>
+                                        <option value="SECONDI">Secondi Piatti</option>
+                                        <option value="DOLCI">Dolci</option>
+                                        <option value="ANTIPASTI">Antipasti</option>
+                                        <option value="VEGETARIANO">Vegetariano</option>
+                                        <option value="VEGANO">Vegano</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="difficulty" class="form-label">Difficoltà *</label>
+                                    <select class="form-select" th:field="*{difficulty}" required>
+                                        <option value="">Seleziona...</option>
+                                        <option value="FACILE">Facile</option>
+                                        <option value="MEDIA">Media</option>
+                                        <option value="DIFFICILE">Difficile</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="preparationTime" class="form-label">
+                                        Tempo (minuti) *
+                                    </label>
+                                    <input type="number" class="form-control" th:field="*{preparationTime}" min="1"
+                                        required>
+                                </div>
+                            </div>
+
+                            <!-- Ingredienti -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-basket"></i> Ingredienti *
+                                </label>
+                                <div id="ingredients-container">
+                                    <!-- Gli ingredienti esistenti (in caso di modifica) -->
+                                    <div class="row mb-2 ingredient-row"
+                                        th:each="ingredient, iterStat : ${recipe.ingredients}">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control"
+                                                th:field="*{ingredients[__${iterStat.index}__].name}"
+                                                placeholder="Nome ingrediente" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="text" class="form-control"
+                                                th:field="*{ingredients[__${iterStat.index}__].quantity}"
+                                                placeholder="Quantità" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="text" class="form-control"
+                                                th:field="*{ingredients[__${iterStat.index}__].unit}"
+                                                placeholder="Unità (g, ml, ecc.)" required>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="removeIngredient(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="addIngredient()">
+                                    <i class="bi bi-plus"></i> Aggiungi Ingrediente
+                                </button>
+                            </div>
+
+                            <!-- Procedimento -->
+                            <div class="mb-3">
+                                <label for="procedure" class="form-label">
+                                    <i class="bi bi-list-ol"></i> Procedimento *
+                                </label>
+                                <textarea class="form-control" th:field="*{procedure}" rows="8" required></textarea>
+                                <small class="text-muted">
+                                    Descrivi i passaggi per preparare la ricetta
+                                </small>
+                            </div>
+
+                            <!-- Pulsanti -->
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/recipes}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Annulla
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Salva Ricetta
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
-<div th:replace="~{fragments/footer :: scripts}"></div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/footer :: scripts}"></div>
 
-<!-- Script con th:inline per usare variabili Thymeleaf -->
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    
-    // Ottieni il numero di ingredienti esistenti
-    let ingredientIndex = /*[[${recipe.ingredients != null ? recipe.ingredients.size() : 0}]]*/ 0;
-    
-    function addIngredient() {
-        const container = document.getElementById('ingredients-container');
-        const newRow = document.createElement('div');
-        newRow.className = 'row mb-2 ingredient-row';
-        newRow.innerHTML = `
+    <!-- Script con th:inline per usare variabili Thymeleaf -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        // Ottieni il numero di ingredienti esistenti
+        let ingredientIndex = /*[[${recipe.ingredients != null ? recipe.ingredients.size() : 0}]]*/ 0;
+
+        function addIngredient() {
+            const container = document.getElementById('ingredients-container');
+            const newRow = document.createElement('div');
+            newRow.className = 'row mb-2 ingredient-row';
+            newRow.innerHTML = `
             <div class="col-md-5">
                 <input type="text" class="form-control" 
                        name="ingredients[${ingredientIndex}].name"
@@ -189,24 +197,25 @@
                 </button>
             </div>
         `;
-        container.appendChild(newRow);
-        ingredientIndex++;
-    }
-    
-    function removeIngredient(button) {
-        const row = button.closest('.ingredient-row');
-        if (row) {
-            row.remove();
+            container.appendChild(newRow);
+            ingredientIndex++;
         }
-    }
-    
-    // Aggiungi almeno un campo ingrediente se la lista è vuota
-    if (ingredientIndex === 0) {
-        addIngredient();
-    }
-    
-    /*]]>*/
-</script>
+
+        function removeIngredient(button) {
+            const row = button.closest('.ingredient-row');
+            if (row) {
+                row.remove();
+            }
+        }
+
+        // Aggiungi almeno un campo ingrediente se la lista è vuota
+        if (ingredientIndex === 0) {
+            addIngredient();
+        }
+
+        /*]]>*/
+    </script>
 
 </body>
+
 </html>

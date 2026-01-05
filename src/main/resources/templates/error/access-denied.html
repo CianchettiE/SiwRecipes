@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Accesso Negato - SiwRecipes</title>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-shield-exclamation text-danger" 
+                           style="font-size: 5rem;"></i>
+                    </div>
+                    
+                    <h1 class="display-4 text-danger mb-3">403</h1>
+                    <h3 class="mb-3">Accesso Negato</h3>
+                    
+                    <p class="text-muted mb-4">
+                        Non hai i permessi necessari per accedere a questa pagina.
+                    </p>
+                    
+                    <!-- Se NON autenticato -->
+                    <div sec:authorize="!isAuthenticated()">
+                        <p class="mb-4">
+                            Per accedere a questa risorsa devi effettuare il login.
+                        </p>
+                        <a th:href="@{/login}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Vai al Login
+                        </a>
+                    </div>
+                    
+                    <!-- Se autenticato -->
+                    <div sec:authorize="isAuthenticated()">
+                        <p class="mb-4">
+                            Il tuo account non ha i privilegi necessari per questa operazione.
+                        </p>
+                        <a th:href="@{/recipes}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-house-door"></i> Torna alla Home
+                        </a>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-muted small">
+                        <p class="mb-1">
+                            Se pensi che questo sia un errore, contatta l'amministratore.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/footer :: scripts}"></div>
+
+</body>
+</html>

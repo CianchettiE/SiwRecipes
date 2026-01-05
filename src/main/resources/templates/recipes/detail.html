@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Dettaglio Ricetta - SiwRecipes</title>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<div class="container mt-4">
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/recipes}">Ricette</a></li>
+            <li class="breadcrumb-item active" th:text="${recipe.title}">Ricetta</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Colonna principale -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0" th:text="${recipe.title}">Titolo Ricetta</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead" th:text="${recipe.shortDescription}">
+                        Descrizione breve della ricetta
+                    </p>
+                    
+                    <!-- Info ricetta -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <i class="bi bi-clock text-primary"></i>
+                            <strong>Tempo:</strong><br>
+                            <span th:text="${recipe.preparationTime}"></span> minuti
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-speedometer text-primary"></i>
+                            <strong>Difficoltà:</strong><br>
+                            <span th:text="${recipe.difficulty}"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-tag text-primary"></i>
+                            <strong>Categoria:</strong><br>
+                            <span th:text="${recipe.category}"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Ingredienti -->
+                    <h4><i class="bi bi-basket"></i> Ingredienti</h4>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item" th:each="ingredient : ${recipe.ingredients}">
+                            <strong th:text="${ingredient.quantity + ' ' + ingredient.unit}"></strong>
+                            <span th:text="${ingredient.name}"></span>
+                        </li>
+                    </ul>
+                    
+                    <!-- Procedimento -->
+                    <h4><i class="bi bi-list-ol"></i> Procedimento</h4>
+                    <div class="bg-light p-3 rounded">
+                        <p style="white-space: pre-line;" th:text="${recipe.procedure}">
+                            Procedimento della ricetta
+                        </p>
+                    </div>
+                    
+                    <!-- Azioni autore -->
+                    <div class="mt-4" 
+                         sec:authorize="isAuthenticated()" 
+                         th:if="${#authentication.principal.user.id == recipe.author.id}">
+                        <a th:href="@{/recipes/{id}/edit(id=${recipe.id})}" 
+                           class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Modifica
+                        </a>
+                        <form th:action="@{/recipes/{id}/delete(id=${recipe.id})}" 
+                              method="post" 
+                              style="display: inline;"
+                              onsubmit="return confirm('Sei sicuro di voler eliminare questa ricetta?');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Elimina
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Azioni admin -->
+                    <div class="mt-4" sec:authorize="hasRole('ADMIN')">
+                        <form th:action="@{/admin/recipes/{id}/delete(id=${recipe.id})}" 
+                              method="post" 
+                              style="display: inline;"
+                              onsubmit="return confirm('Sei sicuro di voler eliminare questa ricetta?');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-shield-x"></i> Elimina (Admin)
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <i class="bi bi-person"></i> 
+                    Creata da <strong th:text="${recipe.author.name + ' ' + recipe.author.surname}"></strong>
+                    il <span th:text="${#temporals.format(recipe.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+            </div>
+            
+            <!-- Sezione Recensioni -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-star"></i> Recensioni 
+                        (<span th:text="${reviews.size()}">0</span>)
+                    </h4>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Form nuova recensione (solo utenti autenticati) -->
+                    <div sec:authorize="isAuthenticated()" class="mb-4">
+                        <h5>Lascia una recensione</h5>
+                        <form th:action="@{/recipes/{id}/reviews(id=${recipe.id})}" 
+                              th:object="${review}" 
+                              method="post">
+                            <div class="mb-3">
+                                <label for="rating" class="form-label">Valutazione</label>
+                                <select class="form-select" th:field="*{rating}" required>
+                                    <option value="">Seleziona...</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Eccellente</option>
+                                    <option value="4">⭐⭐⭐⭐ Buono</option>
+                                    <option value="3">⭐⭐⭐ Discreto</option>
+                                    <option value="2">⭐⭐ Sufficiente</option>
+                                    <option value="1">⭐ Scarso</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="text" class="form-label">Commento</label>
+                                <textarea class="form-control" th:field="*{text}" 
+                                          rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Invia Recensione
+                            </button>
+                        </form>
+                        <hr>
+                    </div>
+                    
+                    <!-- Lista recensioni -->
+                    <div th:if="${!reviews.empty}">
+                        <div class="mb-3" th:each="review : ${reviews}">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1" 
+                                                th:text="${review.author.name + ' ' + review.author.surname}">
+                                                Autore
+                                            </h6>
+                                            <!-- Stelle rating -->
+                                            <div class="mb-2">
+                                                <span th:each="i : ${#numbers.sequence(1, review.rating)}">⭐</span>
+                                                <span class="text-muted" 
+                                                      th:text="'(' + ${review.rating} + '/5)'"></span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted" 
+                                               th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy')}">
+                                            Data
+                                        </small>
+                                    </div>
+                                    <p class="mb-2" th:text="${review.text}">Testo recensione</p>
+                                    
+                                    <!-- Elimina recensione (autore o admin) -->
+                                    <div sec:authorize="isAuthenticated()">
+                                        <form th:if="${#authentication.principal.user.id == review.author.id}"
+                                              th:action="@{/recipes/{recipeId}/reviews/{reviewId}/delete(recipeId=${recipe.id}, reviewId=${review.id})}" 
+                                              method="post"
+                                              style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Elimina
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                    <div sec:authorize="hasRole('ADMIN')">
+                                        <form th:action="@{/admin/reviews/{id}/delete(id=${review.id}, recipeId=${recipe.id})}" 
+                                              method="post"
+                                              style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-shield-x"></i> Elimina (Admin)
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${reviews.empty}" class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        Nessuna recensione ancora. Sii il primo a recensire!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informazioni</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Autore:</strong><br>
+                       <span th:text="${recipe.author.name + ' ' + recipe.author.surname}"></span>
+                    </p>
+                    <p><strong>Pubblicata:</strong><br>
+                       <span th:text="${#temporals.format(recipe.createdAt, 'dd/MM/yyyy')}"></span>
+                    </p>
+                    <p th:if="${!reviews.empty}">
+                        <strong>Valutazione media:</strong><br>
+                        <span th:with="avgRating=${#aggregates.avg(reviews.![rating])}">
+                            <span th:each="i : ${#numbers.sequence(1, #numbers.formatInteger(avgRating, 0))}">⭐</span>
+                            <span th:text="${#numbers.formatDecimal(avgRating, 1, 1)} + '/5'"></span>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/footer :: scripts}"></div>
+
+</body>
+</html>

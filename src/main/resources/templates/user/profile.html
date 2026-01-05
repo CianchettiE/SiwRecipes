@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Profilo Utente - SiwRecipes</title>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<div class="container mt-5 mb-5">
+    
+    <!-- Success message after account deletion (shown on redirect) -->
+    <div th:if="${accountDeleted}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${accountDeleted}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <!-- Profile Header -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-person-circle"></i> Il Mio Profilo
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Nome</label>
+                            <p class="fs-5 mb-0" th:text="${user.name}">Mario</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Cognome</label>
+                            <p class="fs-5 mb-0" th:text="${user.surname}">Rossi</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Email</label>
+                            <p class="fs-5 mb-0" th:text="${user.email}">mario.rossi@example.com</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Metodo di Accesso</label>
+                            <p class="fs-5 mb-0">
+                                <span th:if="${user.oauthProvider == 'LOCAL'}" class="badge bg-secondary">
+                                    <i class="bi bi-envelope"></i> Email e Password
+                                </span>
+                                <span th:if="${user.oauthProvider == 'GOOGLE'}" class="badge bg-danger">
+                                    <i class="bi bi-google"></i> Google OAuth
+                                </span>
+                                <span th:if="${user.oauthProvider == 'GITHUB'}" class="badge bg-dark">
+                                    <i class="bi bi-github"></i> GitHub OAuth
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Ruolo</label>
+                            <p class="fs-5 mb-0">
+                                <span th:if="${user.role == 'ADMIN'}" class="badge bg-warning">
+                                    <i class="bi bi-shield-fill-check"></i> Amministratore
+                                </span>
+                                <span th:if="${user.role == 'USER'}" class="badge bg-info">
+                                    <i class="bi bi-person-fill"></i> Utente
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Ricette Pubblicate</label>
+                            <p class="fs-5 mb-0">
+                                <span th:text="${#lists.size(user.recipes)}">0</span> ricette
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card shadow-lg border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Zona Pericolo
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <h5 class="text-danger fw-bold">Elimina Account</h5>
+                    <p class="text-muted mb-3">
+                        Una volta eliminato il tuo account, <strong>non c'è modo di tornare indietro</strong>. 
+                        Questa operazione è irreversibile e comporterà:
+                    </p>
+                    <ul class="text-muted mb-4">
+                        <li>Eliminazione permanente di tutte le tue ricette pubblicate</li>
+                        <li>Eliminazione permanente di tutte le tue recensioni</li>
+                        <li>Perdita di accesso al tuo account</li>
+                        <li>Impossibilità di recuperare i tuoi dati</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning" th:if="${user.oauthProvider == 'GOOGLE'}">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Nota:</strong> Se hai effettuato l'accesso tramite Google OAuth, 
+                        dovrai anche <a href="https://myaccount.google.com/permissions" target="_blank" class="alert-link">
+                        revocare l'autorizzazione dell'app</a> nelle impostazioni del tuo account Google.
+                    </div>
+
+                    <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="bi bi-trash-fill"></i> Elimina il Mio Account
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAccountModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Conferma Eliminazione Account
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-octagon-fill"></i>
+                    <strong>ATTENZIONE!</strong> Questa azione è irreversibile!
+                </div>
+                <p class="fw-bold">Sei assolutamente sicuro di voler eliminare il tuo account?</p>
+                <p class="text-muted mb-0">
+                    Perderai tutte le tue ricette (<span th:text="${#lists.size(user.recipes)}">0</span>), 
+                    recensioni (<span th:text="${#lists.size(user.reviews)}">0</span>) 
+                    e l'accesso al tuo account in modo permanente.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Annulla
+                </button>
+                <form th:action="@{/profile/delete}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash-fill"></i> Sì, Elimina Definitivamente
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/footer :: scripts}"></div>
+
+</body>
+</html>

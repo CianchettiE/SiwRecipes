@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/header :: head}">
+    <title>Gestione Utenti - SiwRecipes</title>
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/header :: navbar}"></div>
+
+    <div class="container mt-4">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin}">Admin</a></li>
+                <li class="breadcrumb-item active">Gestione Utenti</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h2>
+                    <i class="bi bi-people"></i> Gestione Utenti
+                </h2>
+                <p class="text-muted">
+                    Totale utenti: <strong th:text="${users.size()}">0</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Filtri -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary active" onclick="filterUsers('all')">
+                        Tutti (<span th:text="${users.size()}">0</span>)
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="filterUsers('active')">
+                        Attivi (<span th:text="${#lists.size(#lists.toList(users.?[!banned]))}">0</span>)
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" onclick="filterUsers('banned')">
+                        Bannati (<span th:text="${#lists.size(#lists.toList(users.?[banned]))}">0</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabella utenti -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Email</th>
+                                        <th>Ruolo</th>
+                                        <th>Stato</th>
+                                        <th>Ricette</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="user : ${users}" th:classappend="${user.banned} ? 'table-danger' : ''"
+                                        th:attr="data-status=${user.banned ? 'banned' : 'active'}">
+                                        <td th:text="${user.id}">1</td>
+                                        <td>
+                                            <strong th:text="${user.name + ' ' + user.surname}">
+                                                Nome Cognome
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <a th:href="'mailto:' + ${user.email}" th:text="${user.email}">
+                                                email@example.com
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge"
+                                                th:classappend="${user.role == 'ADMIN'} ? 'bg-danger' : 'bg-primary'"
+                                                th:text="${user.role}">
+                                                USER
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge"
+                                                th:classappend="${user.banned} ? 'bg-danger' : 'bg-success'">
+                                                <i th:class="${user.banned} ? 'bi bi-ban' : 'bi bi-check-circle'"></i>
+                                                <span th:text="${user.banned} ? 'Bannato' : 'Attivo'"></span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${user.recipes.size()}">0</span> ricette
+                                        </td>
+                                        <td>
+                                            <!-- Pulsante Ban/Unban -->
+                                            <div th:if="${user.role != 'ADMIN'}">
+                                                <!-- Se NON bannato, mostra Ban -->
+                                                <div th:if="${!user.banned}">
+                                                    <button type="button" class="btn btn-sm btn-warning"
+                                                        data-bs-toggle="modal"
+                                                        th:attr="data-bs-target='#banModal' + ${user.id}">
+                                                        <i class="bi bi-ban"></i> Ban
+                                                    </button>
+
+                                                    <!-- Modal di conferma ban -->
+                                                    <div class="modal fade" th:id="'banModal' + ${user.id}"
+                                                        tabindex="-1">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Conferma Ban</h5>
+                                                                    <button type="button" class="btn-close"
+                                                                        data-bs-dismiss="modal"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    Sei sicuro di voler bannare l'utente <strong
+                                                                        th:text="${user.name + ' ' + user.surname}"></strong>?
+                                                                    <br><br>
+                                                                    <span class="text-danger">L'utente non potrà più
+                                                                        accedere all'applicazione.</span>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal">Annulla</button>
+                                                                    <form
+                                                                        th:action="@{/admin/users/{id}/ban(id=${user.id})}"
+                                                                        method="post" style="display: inline;">
+                                                                        <button type="submit" class="btn btn-warning">
+                                                                            <i class="bi bi-ban"></i> Conferma Ban
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Se bannato, mostra Unban -->
+                                                <form th:if="${user.banned}"
+                                                    th:action="@{/admin/users/{id}/unban(id=${user.id})}" method="post"
+                                                    style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-check-circle"></i> Sbanna
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            <!-- Gli admin non possono essere bannati -->
+                                            <span th:if="${user.role == 'ADMIN'}" class="text-muted small">
+                                                <i class="bi bi-shield-lock"></i> Admin
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div th:if="${users.empty}" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Nessun utente registrato
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/footer :: scripts}"></div>
+
+    <script>
+        function filterUsers(status) {
+            const rows = document.querySelectorAll('tbody tr');
+            const buttons = document.querySelectorAll('.btn-group button');
+
+            // Aggiorna stile pulsanti
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filtra righe
+            rows.forEach(row => {
+                const rowStatus = row.getAttribute('data-status');
+                if (status === 'all') {
+                    row.style.display = '';
+                } else {
+                    row.style.display = rowStatus === status ? '' : 'none';
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

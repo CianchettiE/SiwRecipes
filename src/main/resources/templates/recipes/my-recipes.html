@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Le Mie Ricette - SiwRecipes</title>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<div class="container mt-4">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-person-lines-fill"></i> Le Mie Ricette</h2>
+            <p class="text-muted">
+                Gestisci le ricette che hai creato
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a th:href="@{/recipes/new}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuova Ricetta
+            </a>
+        </div>
+    </div>
+    
+    <!-- Lista ricette -->
+    <div class="row" th:if="${!recipes.empty}">
+        <div class="col-md-4 mb-4" th:each="recipe : ${recipes}">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${recipe.title}">Titolo Ricetta</h5>
+                    <p class="card-text text-muted small" th:text="${recipe.shortDescription}">
+                        Descrizione breve
+                    </p>
+                    
+                    <div class="mb-2">
+                        <span class="badge bg-secondary" th:text="${recipe.category}"></span>
+                        <span class="badge bg-info" th:text="${recipe.difficulty}"></span>
+                    </div>
+                    
+                    <div class="text-muted small mb-3">
+                        <i class="bi bi-clock"></i> 
+                        <span th:text="${recipe.preparationTime}"></span> min
+                        <br>
+                        <i class="bi bi-calendar"></i> 
+                        <span th:text="${#temporals.format(recipe.createdAt, 'dd/MM/yyyy')}"></span>
+                    </div>
+                    
+                    <!-- Azioni -->
+                    <div class="btn-group w-100" role="group">
+                        <a th:href="@{/recipes/{id}(id=${recipe.id})}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> Dettagli
+                        </a>
+                        <a th:href="@{/recipes/{id}/edit(id=${recipe.id})}" 
+                           class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pencil"></i> Modifica
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal" 
+                                th:data-bs-target="'#deleteModal' + ${recipe.id}">
+                            <i class="bi bi-trash"></i> Elimina
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal di conferma eliminazione -->
+            <div class="modal fade" th:id="'deleteModal' + ${recipe.id}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Conferma Eliminazione</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            Sei sicuro di voler eliminare la ricetta 
+                            "<span th:text="${recipe.title}"></span>"?
+                            <br><br>
+                            <strong class="text-danger">Questa azione è irreversibile!</strong>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Annulla
+                            </button>
+                            <form th:action="@{/recipes/{id}/delete(id=${recipe.id})}" 
+                                  method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-danger">
+                                    Elimina
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Messaggio se non ci sono ricette -->
+    <div class="alert alert-info" th:if="${recipes.empty}">
+        <i class="bi bi-info-circle"></i> 
+        Non hai ancora creato ricette. 
+        <a th:href="@{/recipes/new}">
+            Crea la tua prima ricetta!
+        </a>
+    </div>
+    
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/footer :: scripts}"></div>
+
+</body>
+</html>

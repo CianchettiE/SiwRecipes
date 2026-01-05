@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/header :: head}">
+    <title>Pagina non trovata - SiwRecipes</title>
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/header :: navbar}"></div>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <div class="mb-4">
+                            <i class="bi bi-search text-warning" style="font-size: 5rem;"></i>
+                        </div>
+
+                        <h1 class="display-1 text-warning mb-3">404</h1>
+                        <h3 class="mb-3">Pagina Non Trovata</h3>
+
+                        <p class="text-muted mb-4" th:if="${errorMessage}">
+                            <span th:text="${errorMessage}"></span>
+                        </p>
+
+                        <p class="text-muted mb-4" th:unless="${errorMessage}">
+                            La pagina che stai cercando non esiste o è stata spostata.
+                        </p>
+
+                        <div class="mb-4">
+                            <p class="small text-muted">
+                                Suggerimenti:
+                            </p>
+                            <ul class="list-unstyled text-muted small">
+                                <li><i class="bi bi-check-circle text-success"></i> Verifica l'URL nella barra degli
+                                    indirizzi</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Torna alla homepage e riprova</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Usa il menu di navigazione</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-block">
+                            <a th:href="@{/recipes}" class="btn btn-primary btn-lg me-2">
+                                <i class="bi bi-house-door"></i> Vai alla Home
+                            </a>
+                            <button onclick="history.back()" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-arrow-left"></i> Indietro
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/footer :: scripts}"></div>
+
+</body>
+
+</html>
